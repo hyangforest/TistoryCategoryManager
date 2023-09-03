@@ -14,6 +14,8 @@ interface IUtilities
     #region UI : CONTROL
     void ResetControl();
     void CheckControl(out bool isValid);
+
+    void ReloadControl();
     #endregion
 }
 
