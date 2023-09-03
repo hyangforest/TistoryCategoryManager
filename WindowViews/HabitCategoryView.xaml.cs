@@ -53,7 +53,7 @@ namespace TistoryCategoryManager.WindowViews
             InitializeComponent();
         }
 
-        #region Method
+        #region Interface
         /// <summary>
         /// 초기화
         /// </summary>
@@ -62,7 +62,7 @@ namespace TistoryCategoryManager.WindowViews
             ID = 0;
             this.txtKORCategoryName.Text = string.Empty;
             this.txtDescription.Text = string.Empty;
-            this.txtSortOrder.Text = string.Empty;
+            this.txtSortOrder.Text = this.GetMaxSortOrder();
             this.chkUsageStatus.IsChecked = true;
             this.chkOpenStatus.IsChecked = false;
         }
@@ -74,7 +74,8 @@ namespace TistoryCategoryManager.WindowViews
         {
             if (_context != null)
             {
-                HabitCategory habitCategory = new HabitCategory {
+                HabitCategory habitCategory = new HabitCategory
+                {
                     KORCategoryName = this.txtKORCategoryName.Text,
                     Description = this.txtDescription.Text,
                     SortOrder = Convert.ToInt32(this.txtSortOrder.Text),
@@ -148,7 +149,7 @@ namespace TistoryCategoryManager.WindowViews
                 check++;
                 MessageBox.Show("카테고리명을 입력하세요.", "기본정보");
                 this.txtKORCategoryName.Focus();
-            } 
+            }
             else if (string.IsNullOrEmpty(this.txtSortOrder.Text))
             {
                 check++;
@@ -157,6 +158,85 @@ namespace TistoryCategoryManager.WindowViews
             }
 
             isValid = check == 0;
+        }
+
+        /// <summary>
+        /// 사용자 컨트롤 다시 로드
+        /// </summary>
+        public void ReloadControl() 
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(this);
+
+            while (!(parent is MainWindow))
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+
+            if (parent is MainWindow mainWindow)
+            {
+                mainWindow.ContentPresenter.Content = new HabitCategoryView();
+            }
+        }
+        #endregion
+
+        #region Method
+        /// <summary>
+        /// 정렬순서 (DB 최대값 + 1) 초기화
+        /// </summary>
+        /// <returns></returns>
+        private string GetMaxSortOrder() 
+        {
+            string maxSortOrder = string.Empty;
+
+            if (_context != null)
+            {
+                maxSortOrder = (_context.HabitCategories.OrderByDescending(e => e.SortOrder).Select(e => e.SortOrder).FirstOrDefault() + 1).ToString();
+            }
+
+            return maxSortOrder;
+        }
+
+        /// <summary>
+        /// 정렬순서 중복 확인
+        /// </summary>
+        /// <param name="sortOrder"></param>
+        /// <returns></returns>
+        private bool HasDuplicateSortOrder(int sortOrder) 
+        {
+            bool hasDuplicateSortOrder = false;
+
+            if (_context != null)
+            {
+                hasDuplicateSortOrder = _context.HabitCategories.Where(h => h.SortOrder == sortOrder).ToList().Count > 0;
+            }
+
+            return hasDuplicateSortOrder;
+        }
+
+        private int SaveChangeSortOrder() 
+        {
+            int loadCount = 0;
+
+            var result = MessageBox.Show(Utilities.GetOKCancelSaveStatusMessage(Utilities.SaveStatus.SAVE, " 이미 동일한 정렬 순서가 있습니다. 이 순서로"), "기본정보", MessageBoxButton.OKCancel);
+
+            if (result == MessageBoxResult.OK) 
+            {
+
+                if (_context != null)
+                {
+                    HabitCategory habitCategory = new HabitCategory();
+
+                    habitCategory.Id = ID;
+
+                    habitCategory.SortOrder = Convert.ToInt32(this.txtSortOrder.Text);
+
+                    Manipulate.InsertWithParametersAndUpdateSortOrder(_context, "sp_SaveChange_HabitCategory", habitCategory);
+
+                    loadCount++;
+                }
+            }
+
+            return loadCount;
         }
         #endregion
 
@@ -167,10 +247,10 @@ namespace TistoryCategoryManager.WindowViews
             {
                 collectionViewSource = new CollectionViewSource();
                 collectionViewSource.Source = Find.FindStoredProcedureNameFromSql(_context, "sp_Get_HabitCategories");
-                collection?.Refresh();
-                listView.ItemsSource = null;
-                listView.Items.Clear();
                 listView.ItemsSource = collection;
+
+                // 정렬 순서 최대값 + 1
+                this.txtSortOrder.Text = this.GetMaxSortOrder();
             }
         }
 
@@ -219,20 +299,33 @@ namespace TistoryCategoryManager.WindowViews
             if (result == MessageBoxResult.OK)
             {
                 bool isValid;
+                int loadCount = 0;
                 this.CheckControl(out isValid);
 
                 if (isValid)
                 {
                     if (ID == 0)
                     {
-                        this.Save();
+                        if (this.HasDuplicateSortOrder(Convert.ToInt32(this.txtSortOrder.Text)))
+                        {
+                            loadCount = this.SaveChangeSortOrder();
+                        }
+                        else
+                        {
+                            this.Save();
+                            loadCount++;
+                        }
                     }
                     else
                     {
                         this.Update();
+                        loadCount++;
                     }
 
-                    this.ResetControl();
+                    if (loadCount > 0)
+                    {
+                        this.ReloadControl();
+                    }
                 }
             }
         }
@@ -247,6 +340,11 @@ namespace TistoryCategoryManager.WindowViews
             }
         }
 
+        /// <summary>
+        /// 텍스트 박스 컨트롤 숫자만 입력받기
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void NumberOnlyTextBox(object sender, KeyEventArgs e)
         {
             if (!((e.Key >= Key.D0 && e.Key <= Key.D9) || (e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9) || e.Key == Key.Back || e.Key == Key.Delete))
