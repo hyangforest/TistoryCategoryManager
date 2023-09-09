@@ -1,0 +1,478 @@
+USE [데이터베이스]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_Delete_HabitCategory]    Script Date: 2023-09-09 오후 8:16:34 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		이향림
+-- Create date: 2023.09.09
+-- Description:	삭제 후 정렬순서 정리하기
+-- sp_Delete_HabitCategory 1009
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_Delete_HabitCategory] 
+(
+	@Id		int = 0
+)
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+
+	DECLARE @TEMP_SORT	int
+	DECLARE @MAX_SORT	int
+	DECLARE @LOOP		int
+
+	SELECT @TEMP_SORT = SortOrder 
+	  FROM dbo.HabitCategories
+	 WHERE Id = @Id
+
+	SELECT @MAX_SORT = ISNULL(MAX(SortOrder), 0) 
+	  FROM dbo.HabitCategories
+	
+	   SET @LOOP = @TEMP_SORT + 1
+
+	 WHILE (@LOOP <= @MAX_SORT)
+	 BEGIN
+	
+		UPDATE dbo.HabitCategories
+		   SET SortOrder = SortOrder - 1
+		     , ModificationDate = GETDATE()
+		 WHERE SortOrder = @LOOP
+
+		   SET @LOOP = @LOOP + 1
+
+	 END
+
+	DELETE
+	  FROM dbo.HabitCategories
+	 WHERE Id = @Id
+
+END
+GO
+/****** Object:  StoredProcedure [dbo].[sp_Delete_ImprovementCategory]    Script Date: 2023-09-09 오후 8:16:34 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		이향림
+-- Create date: 2023.09.09
+-- Description:	삭제 후 정렬순서 정리하기
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_Delete_ImprovementCategory] 
+(
+	@Id		int = 0
+)
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+
+	DECLARE @TEMP_SORT	int
+	DECLARE @MAX_SORT	int
+	DECLARE @LOOP		int
+
+	SELECT @TEMP_SORT = SortOrder 
+	  FROM dbo.ImprovementCategories
+	 WHERE Id = @Id
+
+	SELECT @MAX_SORT = ISNULL(MAX(SortOrder), 0) 
+	  FROM dbo.ImprovementCategories
+	
+	   SET @LOOP = @TEMP_SORT + 1
+
+	 WHILE (@LOOP <= @MAX_SORT)
+	 BEGIN
+	
+		UPDATE dbo.ImprovementCategories
+		   SET SortOrder = SortOrder - 1
+		     , ModificationDate = GETDATE()
+		 WHERE SortOrder = @LOOP
+
+		   SET @LOOP = @LOOP + 1
+
+	 END
+
+	DELETE
+	  FROM dbo.ImprovementCategories
+	 WHERE Id = @Id
+
+END
+GO
+/****** Object:  StoredProcedure [dbo].[sp_Get_HabitCategories]    Script Date: 2023-09-09 오후 8:16:34 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:	이향림
+-- Create date: 2023.09.03
+-- Description:	카테고리
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_Get_HabitCategories]
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+
+	SELECT Id
+		 , KORCategoryName
+		 , Description
+		 , SortOrder
+		 , UsageStatus
+		 , IIF(UsageStatus = 'Y', '사용', '미사용') as Usage
+		 , OpenStatus
+		 , IIF(OpenStatus = 'Y', '공개', '비공개') as [Open]
+		 , FORMAT(RegistrationDate, 'yyyy-MM-dd HH:mm:ss') as RegistrationDate
+		 , FORMAT(ModificationDate, 'yyyy-MM-dd HH:mm:ss') as ModificationDate
+	　FROM dbo.HabitCategories
+	 ORDER BY KORCategoryName, SortOrder
+
+END
+GO
+/****** Object:  StoredProcedure [dbo].[sp_Get_ImprovementCategories]    Script Date: 2023-09-09 오후 8:16:34 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:	이향림
+-- Create date: 2023.09.09
+-- Description:	개발 카테고리
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_Get_ImprovementCategories]
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+
+    
+	SELECT Id
+		 , ENGCategoryName
+		 , KORCategoryName
+		 , Description
+		 , SortOrder
+		 , UsageStatus
+		 , IIF(UsageStatus = 'Y', '사용', '미사용') as Usage
+		 , OpenStatus
+		 , IIF(OpenStatus = 'Y', '공개', '비공개') as [Open]
+		 , FORMAT(RegistrationDate, 'yyyy-MM-dd HH:mm:ss') as RegistrationDate
+		 , FORMAT(ModificationDate, 'yyyy-MM-dd HH:mm:ss') as ModificationDate
+	　FROM dbo.ImprovementCategories
+	 ORDER BY ENGCategoryName, SortOrder
+END
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SaveChange_HabitCategory]    Script Date: 2023-09-09 오후 8:16:34 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		이향림
+-- Create date: 2023.09.04
+-- Description:	중복된 정렬순서로 저장할 경우 삽입 정렬하기
+-- sp_SaveChange_HabitCategory 9, 'test', 'dafasdfasd', 1 , 'Y', 'Y'
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_SaveChange_HabitCategory] 
+(
+	@Id					int = 0
+,	@KORCategoryName	nvarchar(150)
+,	@Description		nvarchar(max)
+,	@SortOrder			int = 0
+,	@UsageStatus		char(1) = 'N'
+,	@OpenStatus			char(1) = 'N'
+)
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+
+	-- 저장
+	IF (@Id = 0)
+	BEGIN
+
+		UPDATE dbo.HabitCategories
+		   SET SortOrder = SortOrder + 1
+			 , ModificationDate = GETDATE()
+		 WHERE SortOrder >= @SortOrder
+	
+
+		INSERT INTO dbo.HabitCategories
+		(
+			KORCategoryName
+		,	[Description]
+		,	SortOrder
+		,	UsageStatus
+		,	OpenStatus
+		,	RegistrationDate
+		)
+		VALUES
+		(
+			@KORCategoryName
+		,	@Description
+		,	@SortOrder
+		,	@UsageStatus
+		,	@OpenStatus
+		,	GETDATE()
+		)
+
+	END
+	ELSE -- 수정
+	BEGIN
+		
+		DECLARE @SORT int
+		DECLARE @TEMP_ID int
+		DECLARE @LOOP int
+		
+		-- 수정되는 Item Id의 SortOrder 
+		SELECT @SORT = SortOrder
+		  FROM dbo.HabitCategories
+		 WHERE Id = @Id
+
+		SELECT @TEMP_ID = Id
+		  FROM dbo.HabitCategories
+		 WHERE SortOrder = @SortOrder
+		 
+		 -- 기존보다 수정할 정렬순서가 작을 때
+		 IF (@SORT > @SortOrder)
+		 BEGIN
+		   -- 루프 기준
+		   -- 입력 값과 기존 값의 중간 정렬순서
+		   SET @LOOP = @SORT - 1
+           
+		   -- 중간 정렬 -1 하며 정렬하기
+ 		   WHILE (@SortOrder < @LOOP)
+		   BEGIN
+
+			  UPDATE dbo.HabitCategories
+			     SET SortOrder = SortOrder + 1
+				   , ModificationDate = GETDATE()
+			   WHERE SortOrder = @LOOP
+
+			     SET @LOOP = @LOOP - 1
+				 
+		   END
+
+		   -- 원래 정렬순서에서 한칸 밀리기
+		   UPDATE dbo.HabitCategories
+			   SET SortOrder = SortOrder + 1
+				 , ModificationDate = GETDATE()
+			 WHERE Id = @TEMP_ID
+		  
+		  -- 입력 순서 자리 꿰차기
+		   UPDATE dbo.HabitCategories
+			   SET SortOrder = @SortOrder
+				 , ModificationDate = GETDATE()
+			 WHERE Id = @Id
+			
+		 END
+		 ELSE IF (@SORT < @SortOrder) -- 기존보다 수정할 정렬순서가 클 때
+		 BEGIN
+				
+			SET @LOOP = @SORT + 1
+
+			WHILE (@LOOP <= @SortOrder)
+			BEGIN
+				
+			  UPDATE dbo.HabitCategories
+			     SET SortOrder = SortOrder - 1
+				   , ModificationDate = GETDATE()
+			   WHERE SortOrder = @LOOP
+
+			     SET @LOOP = @LOOP + 1
+
+			END
+
+		  -- 입력 순서 자리 꿰차기
+		   UPDATE dbo.HabitCategories
+			   SET SortOrder = @SortOrder
+				 , ModificationDate = GETDATE()
+			 WHERE Id = @Id
+			
+		 END
+
+		 UPDATE dbo.HabitCategories
+			SET KORCategoryName = @KORCategoryName
+			  , [Description] = @Description
+			  , UsageStatus = @UsageStatus
+			  , OpenStatus = @OpenStatus
+			  , ModificationDate = GETDATE()
+		  WHERE Id = @Id
+	   
+		 -- 1
+		--DECLARE @SORT_TABLE TABLE (
+		--	Id int
+		--,	KORCategoryName nvarchar(max)
+		--,   [Description] nvarchar(max)
+		--,	SortOrder int
+		--,	UsageStatus nvarchar(max)
+		--,	OpenStatus	nvarchar(max)
+		--,	RegistrationDate datetime2
+		--,	ModificationDate datetime2
+		--)
+
+		--INSERT INTO @SORT_TABLE 
+		--SELECT Id
+		--	 , KORCategoryName
+		--	 , [Description]
+		--	 , SortOrder
+		--	 , UsageStatus
+		--	 , OpenStatus
+		--	 , RegistrationDate
+		--	 , ModificationDate
+		--  FROM dbo.HabitCategories
+		-- WHERE SortOrder = @SortOrder
+
+	END
+
+END
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SaveChange_ImprovementCategory]    Script Date: 2023-09-09 오후 8:16:34 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- =============================================
+-- Author:		이향림
+-- Create date: 2023.09.09
+-- Description:	중복된 정렬순서로 저장할 경우 삽입 정렬하기
+-- =============================================
+CREATE PROCEDURE [dbo].[sp_SaveChange_ImprovementCategory] 
+(
+	@Id					int = 0
+,	@ENGCategoryName	nvarchar(150)
+,	@KORCategoryName	nvarchar(150)
+,	@Description		nvarchar(max)
+,	@SortOrder			int = 0
+,	@UsageStatus		char(1) = 'N'
+,	@OpenStatus			char(1) = 'N'
+)
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+
+	-- 저장
+	IF (@Id = 0)
+	BEGIN
+
+		UPDATE dbo.ImprovementCategories
+		   SET SortOrder = SortOrder + 1
+			 , ModificationDate = GETDATE()
+		 WHERE SortOrder >= @SortOrder
+	
+
+		INSERT INTO dbo.ImprovementCategories
+		(
+			ENGCategoryName
+		,	KORCategoryName
+		,	[Description]
+		,	SortOrder
+		,	UsageStatus
+		,	OpenStatus
+		,	RegistrationDate
+		)
+		VALUES
+		(
+			@ENGCategoryName
+		,	@KORCategoryName
+		,	@Description
+		,	@SortOrder
+		,	@UsageStatus
+		,	@OpenStatus
+		,	GETDATE()
+		)
+
+	END
+	ELSE -- 수정
+	BEGIN
+		
+		DECLARE @SORT int
+		DECLARE @TEMP_ID int
+		DECLARE @LOOP int
+		
+		-- 수정되는 Item Id의 SortOrder 
+		SELECT @SORT = SortOrder
+		  FROM dbo.ImprovementCategories
+		 WHERE Id = @Id
+
+		SELECT @TEMP_ID = Id
+		  FROM dbo.ImprovementCategories
+		 WHERE SortOrder = @SortOrder
+		 
+		 -- 기존보다 수정할 정렬순서가 작을 때
+		 IF (@SORT > @SortOrder)
+		 BEGIN
+		   -- 루프 기준
+		   -- 입력 값과 기존 값의 중간 정렬순서
+		   SET @LOOP = @SORT - 1
+           
+		   -- 중간 정렬 -1 하며 정렬하기
+ 		   WHILE (@SortOrder < @LOOP)
+		   BEGIN
+
+			  UPDATE dbo.ImprovementCategories
+			     SET SortOrder = SortOrder + 1
+				   , ModificationDate = GETDATE()
+			   WHERE SortOrder = @LOOP
+
+			     SET @LOOP = @LOOP - 1
+				 
+		   END
+
+		   -- 원래 정렬순서에서 한칸 밀리기
+		   UPDATE dbo.ImprovementCategories
+			   SET SortOrder = SortOrder + 1
+				 , ModificationDate = GETDATE()
+			 WHERE Id = @TEMP_ID
+		  
+		  -- 입력 순서 자리 꿰차기
+		   UPDATE dbo.ImprovementCategories
+			   SET SortOrder = @SortOrder
+				 , ModificationDate = GETDATE()
+			 WHERE Id = @Id
+			
+		 END
+		 ELSE IF (@SORT < @SortOrder) -- 기존보다 수정할 정렬순서가 클 때
+		 BEGIN
+				
+			SET @LOOP = @SORT + 1
+
+			WHILE (@LOOP <= @SortOrder)
+			BEGIN
+				
+			  UPDATE dbo.ImprovementCategories
+			     SET SortOrder = SortOrder - 1
+				   , ModificationDate = GETDATE()
+			   WHERE SortOrder = @LOOP
+
+			     SET @LOOP = @LOOP + 1
+
+			END
+
+		  -- 입력 순서 자리 꿰차기
+		   UPDATE dbo.ImprovementCategories
+			   SET SortOrder = @SortOrder
+				 , ModificationDate = GETDATE()
+			 WHERE Id = @Id
+			
+		 END
+
+		 UPDATE dbo.ImprovementCategories
+			SET ENGCategoryName = @ENGCategoryName
+			  , KORCategoryName = @KORCategoryName
+			  , [Description] = @Description
+			  , UsageStatus = @UsageStatus
+			  , OpenStatus = @OpenStatus
+			  , ModificationDate = GETDATE()
+		  WHERE Id = @Id
+	   
+	END
+
+END
+GO

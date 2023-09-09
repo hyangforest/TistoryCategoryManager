@@ -33,6 +33,7 @@ public class AppDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(@"Server=DESKTOP-26M1QHH\SQLEXPRESS;Database=HyangForest;User Id=hyang;Password=dmdrk103!;TrustServerCertificate=True;");
+        //optionsBuilder.UseSqlServer(@"Server=ms1901.gabiadb.com;Database=hyangforest;User Id=hyang;Password=hyangrimlee93*;TrustServerCertificate=True;");
     }
 
 
