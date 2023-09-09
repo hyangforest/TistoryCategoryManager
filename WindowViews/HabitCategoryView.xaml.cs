@@ -129,8 +129,9 @@ namespace TistoryCategoryManager.WindowViews
 
                 if (habitCategoryToDelete != null)
                 {
-                    _context.HabitCategories.Remove(habitCategoryToDelete);
-                    _context.SaveChanges();
+                    //_context.HabitCategories.Remove(habitCategoryToDelete);
+                    //_context.SaveChanges();
+                    Manipulate.DeleteWithParametersAndUpdateSortOrder(_context, habitCategoryToDelete);
 
                     MessageBox.Show("삭제되었습니다.", "기본정보");
                 }
@@ -362,6 +363,7 @@ namespace TistoryCategoryManager.WindowViews
             if (result == MessageBoxResult.OK)
             {
                 this.Delete();
+                this.ReloadControl();
             }
         }
 

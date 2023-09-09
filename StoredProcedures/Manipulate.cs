@@ -11,7 +11,7 @@ namespace TistoryCategoryManager;
 public class Manipulate
 {
     /// <summary>
-    /// 카테고리 중복된 정렬순서이면 삽입 정렬해서 저장하기
+    /// 카테고리 중복된 정렬순서이면 삽입 정렬해서 저장/수정하기
     /// </summary>
     /// <param name="context"></param>
     /// <param name="habitCategory"></param>
@@ -33,6 +33,16 @@ public class Manipulate
                                                                   , SortOrder
                                                                   , UsageStatus
                                                                   , OpenStatus);
+        }
+    }
+
+    public static void DeleteWithParametersAndUpdateSortOrder(AppDbContext context, HabitCategory habitCategory)
+    {
+        if (context != null)
+        {
+            var Id = new SqlParameter("@Id", habitCategory.Id);
+            
+            context.Database.ExecuteSqlRaw($"EXEC sp_Delete_HabitCategory @Id", Id);
         }
     }
 }
