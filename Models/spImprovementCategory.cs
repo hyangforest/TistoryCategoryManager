@@ -1,13 +1,14 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace TistoryCategoryManager;
 
-public class ImprovementCategory
+public class spImprovementCategory 
 {
     public int Id { get; set; }
-
+    
     /// <summary>
-    /// 영어명
+    /// 카테고리명
     /// </summary>
     public string? ENGCategoryName { get; set; }
 
@@ -30,6 +31,7 @@ public class ImprovementCategory
     /// 사용여부 
     /// </summary>
     public string UsageStatus { get; set; } = "Y";
+    public string? Usage { get; set; } 
 
     /// <summary>
     /// 공개여부
@@ -37,13 +39,15 @@ public class ImprovementCategory
     /// </summary>
     public string OpenStatus { get; set; } = "N";
 
+    public string? Open { get; set; }
+
     /// <summary>
     /// 등록일시
     /// </summary>
-    public DateTime RegistrationDate { get; set; }
+    public string? RegistrationDate { get; set; }
 
     /// <summary>
     /// 수정일시
     /// </summary>
-    public DateTime? ModificationDate { get; set; }
+    public string? ModificationDate { get; set; }
 }

@@ -13,23 +13,21 @@ public class AppDbContext : DbContext
     #region Table
     public DbSet<HabitCategory> HabitCategories { get; set; }
 
-    public DbSet<RecordCategory> RecordCategories { get; set; }
     public DbSet<ImprovementCategory> ImprovementCategories { get; set; }
     #endregion
 
     #region Stored Procedurese
     public DbSet<spHabitCategory> sp_HabitCategories { get; set; }
-
+    public DbSet<spImprovementCategory> sp_ImprovementCategories { get; set; }
     #endregion
 
     #region 생성
-    //protected override void OnModelCreating(ModelBuilder modelBuilder)
-    //{
-    //    modelBuilder.Entity<HabitCategory>();
-    //    modelBuilder.Entity<spHabitCategory>().HasNoKey();
-    //    modelBuilder.Entity<RecordCategory>();
-    //    modelBuilder.Entity<ImprovementCategory>();
-    //}
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        //modelBuilder.Entity<HabitCategory>();
+        //modelBuilder.Entity<ImprovementCategory>();
+        //modelBuilder.Entity<spHabitCategory>().HasNoKey();
+    }
     #endregion
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

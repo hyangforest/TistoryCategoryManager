@@ -69,42 +69,6 @@ namespace TistoryCategoryManager.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("KORCategoryName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModificationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OpenStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RegistrationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UsageStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ImprovementCategories");
-                });
-
-            modelBuilder.Entity("TistoryCategoryManager.RecordCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ENGCategoryName")
                         .HasColumnType("nvarchar(max)");
 
@@ -130,19 +94,16 @@ namespace TistoryCategoryManager.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RecordCategories");
+                    b.ToTable("ImprovementCategories");
                 });
 
             modelBuilder.Entity("TistoryCategoryManager.spHabitCategory", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("KORCategoryName")
                         .HasColumnType("nvarchar(max)");
@@ -169,8 +130,6 @@ namespace TistoryCategoryManager.Migrations
                     b.Property<string>("UsageStatus")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
 
                     b.ToTable("sp_HabitCategories");
                 });

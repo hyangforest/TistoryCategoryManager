@@ -5,8 +5,86 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TistoryCategoryManager.WindowViews"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
+             d:DesignHeight="200" d:DesignWidth="800" Loaded="UserControl_Loaded">
+    <Grid Margin="10,0,10,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="500"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Column="0">
+            <Grid>
+                <ListView Name="listView" Grid.Column="0" SelectionChanged="listView_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="ID" Width="30" DisplayMemberBinding="{Binding Id}" />
+                            <GridViewColumn Header="카테고리명" Width="150" DisplayMemberBinding="{Binding ENGCategoryName}" />
+                            <GridViewColumn Header="한글명" Width="80" DisplayMemberBinding="{Binding KORCategoryName}" />
+                            <GridViewColumn Header="사용여부" Width="70" DisplayMemberBinding="{Binding Usage}" />
+                            <GridViewColumn Header="공개여부" Width="70" DisplayMemberBinding="{Binding Open}" />
+                            <GridViewColumn Header="정렬순서" Width="60" DisplayMemberBinding="{Binding SortOrder}" />
+                            <GridViewColumn Header="등록일시" Width="150" DisplayMemberBinding="{Binding RegistrationDate}" />
+                            <GridViewColumn Header="수정일시"  Width="150" DisplayMemberBinding="{Binding ModificationDate}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </ScrollViewer>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"  Grid.Column="1">
+            <StackPanel>
+                <GroupBox Header="기본정보" HorizontalAlignment="Left" Width="255" Margin="10,0,5,0">
+                    <StackPanel>
+                        <StackPanel Margin="0,10,0,0">
+                            <Label FontWeight="Bold">카테고리명</Label>
+                            <TextBox x:Name="txtENGCategoryName" Margin="5,0,5,5"></TextBox>
+                        </StackPanel>
+                        <StackPanel Margin="0,10,0,0">
+                            <Label FontWeight="Bold">한글명</Label>
+                            <TextBox x:Name="txtKORCategoryName" Margin="5,0,5,5"></TextBox>
+                        </StackPanel>
+                        <StackPanel>
+                            <Label FontWeight="Bold">설명</Label>
+                            <TextBox x:Name="txtDescription" Margin="5,0,5,5" Height="50" AcceptsReturn="True" VerticalScrollBarVisibility="Visible"></TextBox>
+                        </StackPanel>
+                        <StackPanel>
+                            <Label FontWeight="Bold">정렬</Label>
+                            <TextBox x:Name="txtSortOrder" Margin="5,0,5,5" Width="50" HorizontalAlignment="Left" PreviewKeyDown="NumberOnlyTextBox"></TextBox>
+                        </StackPanel>
+                        <StackPanel>
+                            <Label FontWeight="Bold">사용여부</Label>
+                            <Grid Margin="5,-5,5,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <CheckBox x:Name="chkUsageStatus" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" IsChecked="True"/>
+                                <Label Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">사용</Label>
+                            </Grid>
+                        </StackPanel>
+                        <StackPanel>
+                            <Label FontWeight="Bold">공개여부</Label>
+                            <Grid Margin="5,-5,5,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <CheckBox x:Name="chkOpenStatus" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" />
+                                <Label Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">공개</Label>
+                            </Grid>
+                        </StackPanel>
+                        <WrapPanel HorizontalAlignment="Right" Margin="5,0,5,10">
+                            <Button x:Name="btnReset" Padding="5" Margin="3" Click="btnReset_Click">초기화</Button>
+                            <Button x:Name="btnSave" Padding="5" Margin="3" Click="btnSave_Click">저장</Button>
+                            <Button x:Name="btnDelete" Padding="5" Margin="3" Click="btnDelete_Click">삭제</Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

@@ -11,4 +11,9 @@ public class Find
     {
         return context?.sp_HabitCategories?.FromSql($"EXEC {spName}").ToList();
     }
+
+    public static List<spImprovementCategory>? FindStoredProcedureFromSql(AppDbContext context)
+    {
+        return context?.sp_ImprovementCategories?.FromSql($"EXEC sp_Get_ImprovementCategories").ToList();
+    }
 }
