@@ -21,7 +21,7 @@
             <ColumnDefinition Width="551*"/>
         </Grid.ColumnDefinitions>
         <Button Grid.Row="0" x:Name="btnHabit" Content="습관 카테고리 관리" Click="btnHabit_Click" Margin="10" />
-        <Button Grid.Row="1" x:Name="btnRecord" Content="개발 카테고리 관리" Click="btnRecord_Click" Margin="10" />
+        <Button Grid.Row="1" x:Name="btnRecord" Content="개발 카테고리 관리" Click="btnImprovement_Click" Margin="10" />
         <ContentPresenter Grid.Row="2" x:Name="ContentPresenter" MaxHeight="300" />
         <Border Grid.Row="3" Height="35" Margin="0,0,0,0" Background="#FFEDEBEB">
             <TextBlock TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="10" FontSize="10">

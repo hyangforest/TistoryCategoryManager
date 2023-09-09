@@ -28,7 +28,7 @@ namespace TistoryCategoryManager
         /// 화면
         /// </summary>
         private readonly HabitCategoryView _habitCategoryView;
-        private readonly RecordCategoryView _recordCategoryView;
+        private readonly ImprovementCategoryView _improvementCategoryView;
 
         public MainWindow()
         {
@@ -38,14 +38,14 @@ namespace TistoryCategoryManager
 
             // 화면
             _habitCategoryView = new HabitCategoryView();
-            _recordCategoryView = new RecordCategoryView();
+            _improvementCategoryView = new ImprovementCategoryView();
 
             ContentPresenter.Content = _habitCategoryView;
         }
 
-        private void btnRecord_Click(object sender, RoutedEventArgs e)
+        private void btnImprovement_Click(object sender, RoutedEventArgs e)
         {
-            ContentPresenter.Content = _recordCategoryView; 
+            ContentPresenter.Content = _improvementCategoryView; 
         }
 
         private void btnHabit_Click(object sender, RoutedEventArgs e)
