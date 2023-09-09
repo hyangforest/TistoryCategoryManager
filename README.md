@@ -8,11 +8,7 @@
 ![image](tistory.png)
 
 2. 개발 화면
-- 습관 카테고리
 ![image](habit.png)
-
-- 개발 카테고리
-![image](improvement.png)
 
 ## 기능 목표
 - EF Core 에서 Stored Procedure 연동 연습하기
