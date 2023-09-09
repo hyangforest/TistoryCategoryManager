@@ -27,6 +27,7 @@ namespace TistoryCategoryManager.WindowViews
     public partial class HabitCategoryView : UserControl, IUtilities
     {
         private int ID = 0;
+        private int SELECTED_SORTORDER = 0;
 
         /// <summary>
         /// DB
@@ -198,6 +199,7 @@ namespace TistoryCategoryManager.WindowViews
 
         /// <summary>
         /// 정렬순서 중복 확인
+        /// 선택한 값과 입력한 값과 동일한 것은 중복 체크 안함
         /// </summary>
         /// <param name="sortOrder"></param>
         /// <returns></returns>
@@ -205,9 +207,12 @@ namespace TistoryCategoryManager.WindowViews
         {
             bool hasDuplicateSortOrder = false;
 
-            if (_context != null)
+            if (SELECTED_SORTORDER != sortOrder)
             {
-                hasDuplicateSortOrder = _context.HabitCategories.Where(h => h.SortOrder == sortOrder).ToList().Count > 0;
+                if (_context != null)
+                {
+                    hasDuplicateSortOrder = _context.HabitCategories.Where(h => h.SortOrder == sortOrder).ToList().Count > 0;
+                }
             }
 
             return hasDuplicateSortOrder;
@@ -216,21 +221,36 @@ namespace TistoryCategoryManager.WindowViews
         private int SaveChangeSortOrder() 
         {
             int loadCount = 0;
+            MessageBoxResult result;
 
-            var result = MessageBox.Show(Utilities.GetOKCancelSaveStatusMessage(Utilities.SaveStatus.SAVE, " 이미 동일한 정렬 순서가 있습니다. 이 순서로"), "기본정보", MessageBoxButton.OKCancel);
+            if (ID == 0)
+            {
+                result = MessageBox.Show(Utilities.GetOKCancelSaveStatusMessage(Utilities.SaveStatus.SAVE, " 이미 동일한 정렬 순서가 있습니다. 이 순서로"), "기본정보", MessageBoxButton.OKCancel);
+            }
+            else
+            { 
+                result = MessageBox.Show(Utilities.GetOKCancelSaveStatusMessage(Utilities.SaveStatus.UPDATE, " 이미 동일한 정렬 순서가 있습니다. 이 순서로"), "기본정보", MessageBoxButton.OKCancel);
+            }
+
 
             if (result == MessageBoxResult.OK) 
             {
 
                 if (_context != null)
                 {
-                    HabitCategory habitCategory = new HabitCategory();
+                    HabitCategory habitCategory = new HabitCategory
+                    {
+                        Id = ID,
+                        KORCategoryName = this.txtKORCategoryName.Text,
+                        Description = this.txtDescription.Text,
+                        SortOrder = Convert.ToInt32(this.txtSortOrder.Text),
+                        UsageStatus = (bool)this.chkUsageStatus.IsChecked ? "Y" : "N",
+                        OpenStatus = (bool)this.chkOpenStatus.IsChecked ? "Y" : "N",
+                        RegistrationDate = DateTime.Now,
+                        ModificationDate = null,
+                    };
 
-                    habitCategory.Id = ID;
-
-                    habitCategory.SortOrder = Convert.ToInt32(this.txtSortOrder.Text);
-
-                    Manipulate.InsertWithParametersAndUpdateSortOrder(_context, "sp_SaveChange_HabitCategory", habitCategory);
+                    Manipulate.InsertWithParametersAndUpdateSortOrder(_context, habitCategory);
 
                     loadCount++;
                 }
@@ -261,6 +281,8 @@ namespace TistoryCategoryManager.WindowViews
                 spHabitCategory habit = (spHabitCategory)listView.SelectedItem;
 
                 ID = habit.Id;
+                SELECTED_SORTORDER = habit.SortOrder;
+
                 this.txtKORCategoryName.Text = habit.KORCategoryName;
                 this.txtDescription.Text = habit.Description;
                 this.txtSortOrder.Text = habit.SortOrder.ToString();
@@ -304,22 +326,25 @@ namespace TistoryCategoryManager.WindowViews
 
                 if (isValid)
                 {
-                    if (ID == 0)
+                    // 정렬순서 중복 저장/수정
+                    if (this.HasDuplicateSortOrder(Convert.ToInt32(this.txtSortOrder.Text)))
                     {
-                        if (this.HasDuplicateSortOrder(Convert.ToInt32(this.txtSortOrder.Text)))
-                        {
-                            loadCount = this.SaveChangeSortOrder();
-                        }
-                        else
-                        {
-                            this.Save();
-                            loadCount++;
-                        }
+                        loadCount =  this.SaveChangeSortOrder();
                     }
                     else
                     {
-                        this.Update();
-                        loadCount++;
+                        // 저장
+                        if (ID == 0)
+                        {
+                            this.Save();
+                            loadCount++;
+
+                        }
+                        else // 수정
+                        { 
+                            this.Update();
+                            loadCount++;
+                        }
                     }
 
                     if (loadCount > 0)
